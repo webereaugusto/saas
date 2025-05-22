@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="bg-[#343541]">
-      <div className="relative isolate px-6 pt-14 lg:px-8">
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+    <div className="bg-[#343541] min-h-screen flex flex-col">
+      <div className="relative isolate px-6 pt-14 lg:px-8 flex-grow flex items-center">
+        <div className="mx-auto max-w-2xl py-20 sm:py-32 lg:py-40">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
               Chat com Inteligência Artificial
