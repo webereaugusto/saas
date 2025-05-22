@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Chat from '@/components/Chat';
-import { PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, UserCircleIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import toast from 'react-hot-toast';
@@ -16,6 +15,8 @@ export default function Dashboard() {
   const router = useRouter();
   const [chats, setChats] = useState<Array<{ id: string; title: string }>>([]);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [isRenaming, setIsRenaming] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -51,6 +52,72 @@ export default function Dashboard() {
     } catch (error) {
       toast.error('Erro ao criar novo chat');
     }
+  };
+
+  const handleRenameChat = async (chatId: string, title: string) => {
+    setIsRenaming(null);
+    
+    if (!title.trim() || title === chats.find(c => c.id === chatId)?.title) {
+      return; // Não faz nada se o título estiver vazio ou não foi alterado
+    }
+
+    try {
+      const response = await fetch(`/api/chats/${chatId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao renomear chat');
+      }
+
+      const data = await response.json();
+      
+      // Atualizar o estado local com o novo título
+      setChats(prev => prev.map(chat => 
+        chat.id === chatId ? { ...chat, title: data.chat.title } : chat
+      ));
+
+      toast.success('Chat renomeado com sucesso');
+    } catch (error) {
+      toast.error('Erro ao renomear chat');
+    }
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
+    // Confirmar exclusão
+    if (!window.confirm("Tem certeza que deseja excluir este chat?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/chats/${chatId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao excluir chat');
+      }
+
+      // Remover o chat da lista
+      setChats(prev => prev.filter(chat => chat.id !== chatId));
+      
+      // Se o chat excluído for o selecionado, selecionar outro
+      if (selectedChat === chatId) {
+        const remainingChats = chats.filter(chat => chat.id !== chatId);
+        setSelectedChat(remainingChats.length > 0 ? remainingChats[0].id : null);
+      }
+
+      toast.success('Chat excluído com sucesso');
+    } catch (error) {
+      toast.error('Erro ao excluir chat');
+    }
+  };
+
+  const startRenaming = (chatId: string, currentTitle: string) => {
+    setIsRenaming(chatId);
+    setNewTitle(currentTitle);
   };
 
   if (status === 'loading') {
@@ -123,17 +190,83 @@ export default function Dashboard() {
           <div className="mt-5 text-xs text-gray-500 font-medium uppercase px-3 mb-2">Chats anteriores</div>
           <div className="space-y-1 pb-4">
             {chats.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => setSelectedChat(chat.id)}
-                className={`w-full flex items-center px-3 py-3 text-sm rounded-md hover:bg-gray-700 transition-colors ${
-                  selectedChat === chat.id
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-300'
-                }`}
-              >
-                <span className="truncate">{chat.title}</span>
-              </button>
+              <div key={chat.id} className="flex items-center relative group">
+                {isRenaming === chat.id ? (
+                  <div className="flex items-center w-full px-3 py-2">
+                    <input 
+                      type="text"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleRenameChat(chat.id, newTitle);
+                        } else if (e.key === 'Escape') {
+                          setIsRenaming(null);
+                        }
+                      }}
+                      className="w-full bg-gray-800 text-white px-2 py-1 rounded outline-none"
+                      autoFocus
+                      onBlur={() => handleRenameChat(chat.id, newTitle)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setSelectedChat(chat.id)}
+                      className={`flex-1 flex items-center px-3 py-3 text-sm rounded-md hover:bg-gray-700 transition-colors text-left ${
+                        selectedChat === chat.id
+                          ? 'bg-gray-800 text-white'
+                          : 'text-gray-300'
+                      }`}
+                    >
+                      <span className="truncate">{chat.title}</span>
+                    </button>
+                    <Menu as="div" className="relative">
+                      <Menu.Button className="p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-700 text-gray-300 focus:outline-none">
+                        <EllipsisVerticalIcon className="h-5 w-5" />
+                      </Menu.Button>
+                      <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                      >
+                        <Menu.Items className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-[#202123] py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => startRenaming(chat.id, chat.title)}
+                                className={`flex items-center w-full px-4 py-2 text-left text-sm ${
+                                  active ? 'bg-gray-800 text-white' : 'text-gray-300'
+                                }`}
+                              >
+                                <PencilIcon className="h-4 w-4 mr-2" />
+                                Renomear
+                              </button>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => handleDeleteChat(chat.id)}
+                                className={`flex items-center w-full px-4 py-2 text-left text-sm ${
+                                  active ? 'bg-gray-800 text-white' : 'text-gray-300'
+                                }`}
+                              >
+                                <TrashIcon className="h-4 w-4 mr-2" />
+                                Excluir
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
+                  </>
+                )}
+              </div>
             ))}
           </div>
         </div>
