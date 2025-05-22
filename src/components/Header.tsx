@@ -10,8 +10,8 @@ export default function Header() {
   const { data: session } = useSession();
 
   return (
-    <header className="bg-[#202123] border-b border-gray-800/50">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <header className="bg-[#202123] border-b border-gray-800/50 fixed top-0 left-0 right-0 z-10">
+      <nav className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
             <Link href="/" className="flex items-center">
