@@ -186,7 +186,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
                 onKeyDown={handleKeyDown}
                 placeholder="Digite sua mensagem..."
                 rows={1}
-                className="w-full resize-none bg-transparent border-0 p-3 pr-12 text-white focus:ring-0 focus-visible:ring-0 placeholder-gray-500"
+                className="w-full resize-none bg-transparent border-0 p-3 pr-12 text-white focus:outline-none focus:ring-0 focus-visible:ring-0 placeholder-gray-500"
                 style={{ maxHeight: '200px' }}
                 disabled={isLoading}
               />
@@ -261,7 +261,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
                 onKeyDown={handleKeyDown}
                 placeholder="Digite sua mensagem..."
                 rows={1}
-                className="w-full resize-none bg-transparent border-0 p-3 pr-12 text-white focus:ring-0 focus-visible:ring-0 placeholder-gray-500"
+                className="w-full resize-none bg-transparent border-0 p-3 pr-12 text-white focus:outline-none focus:ring-0 focus-visible:ring-0 placeholder-gray-500"
                 style={{ maxHeight: '200px' }}
                 disabled={isLoading}
               />
