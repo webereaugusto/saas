@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: Request,
-  context: { params: { chatId: string } }
+  { params }: { params: { chatId: string } }
 ) {
   try {
     const session = await getServerSession();
@@ -14,11 +14,16 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const chatId = context.params.chatId;
-    
+    if (!params || typeof params !== 'object' || !('chatId' in params)) {
+      return NextResponse.json(
+        { error: 'ID do chat não fornecido' },
+        { status: 400 }
+      );
+    }
+
     const messages = await prisma.message.findMany({
       where: {
-        chatId,
+        chatId: String(params.chatId),
       },
       orderBy: {
         createdAt: 'asc',

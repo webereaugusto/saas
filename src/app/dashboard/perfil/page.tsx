@@ -108,8 +108,8 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="flex h-screen bg-[#343541]">
-      <div className="w-full max-w-5xl mx-auto px-4 py-8">
+    <div className="flex min-h-screen bg-[#343541]">
+      <div className="w-full max-w-5xl mx-auto px-4 py-8 pb-16">
         <div className="flex items-center mb-8">
           <a href="/dashboard" className="text-gray-300 hover:text-white mr-4">
             <ArrowLeftIcon className="h-5 w-5" />

@@ -160,7 +160,7 @@ export default function UserStats() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mb-10">
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gray-800 rounded-lg p-6 shadow">
