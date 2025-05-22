@@ -148,15 +148,10 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
               </div>
             </div>
           ) : (
-            <div key={message.id} className="py-4 border-b border-gray-800/30">
+            <div key={message.id} className="py-4">
               <div className="max-w-2xl mx-auto px-4">
-                <div className="flex gap-4 text-base">
-                  <div className="w-7 h-7 rounded bg-teal-500 flex items-center justify-center flex-shrink-0">
-                    AI
-                  </div>
-                  <div className="min-h-[20px] text-gray-100 whitespace-pre-wrap">
-                    {message.content}
-                  </div>
+                <div className="text-base text-gray-100 whitespace-pre-wrap">
+                  {message.content}
                 </div>
               </div>
             </div>
