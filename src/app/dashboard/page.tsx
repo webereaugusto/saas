@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Chat from '@/components/Chat';
-import { PlusIcon, UserCircleIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, UserCircleIcon, EllipsisHorizontalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -188,7 +188,7 @@ export default function Dashboard() {
         {/* Lista de Chats */}
         <div className="px-2 flex-1 overflow-y-auto sidebar-scrollbar">
           <div className="mt-5 text-xs text-gray-500 font-medium uppercase px-3 mb-2">Chats anteriores</div>
-          <div className="space-y-1 pb-4">
+          <div className="space-y-0.5 pb-4">
             {chats.map((chat) => (
               <div key={chat.id} className="flex items-center relative group">
                 {isRenaming === chat.id ? (
@@ -211,21 +211,22 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div 
-                    className={`flex-1 flex items-center justify-between px-3 py-3 rounded-md hover:bg-gray-700 transition-colors ${
+                    className={`flex items-center w-full px-3 py-2 rounded-md hover:bg-gray-700 transition-colors ${
                       selectedChat === chat.id ? 'bg-gray-800 text-white' : 'text-gray-300'
                     }`}
                   >
                     <button
                       onClick={() => setSelectedChat(chat.id)}
-                      className="flex-1 text-left truncate pr-2"
+                      className="flex-grow text-left min-w-0 overflow-hidden mr-2 text-sm"
+                      title={chat.title}
                     >
-                      <span className="truncate">{chat.title}</span>
+                      <span className="truncate block">{chat.title}</span>
                     </button>
-                    <Menu as="div" className="relative flex-shrink-0">
+                    <Menu as="div" className="flex-shrink-0">
                       <Menu.Button className={`p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 focus:outline-none transition-opacity duration-200 ${
                         selectedChat === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                       }`}>
-                        <EllipsisVerticalIcon className="h-5 w-5" />
+                        <EllipsisHorizontalIcon className="h-5 w-5" />
                       </Menu.Button>
                       <Transition
                         as={Fragment}
