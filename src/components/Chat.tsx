@@ -7,6 +7,7 @@ interface Message {
   content: string;
   role: 'user' | 'assistant';
   isTyping?: boolean; // Para controlar o efeito de digitação
+  isNew?: boolean; // Para identificar novas mensagens vs. histórico
 }
 
 interface ChatProps {
@@ -37,20 +38,14 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
       const data = await response.json();
       
       // Inicializar o conteúdo exibido para cada mensagem
+      // Mensagens históricas são exibidas imediatamente
       const initialDisplayContent: {[key: string]: string} = {};
       data.messages.forEach((msg: Message) => {
-        initialDisplayContent[msg.id] = msg.role === 'assistant' ? '' : msg.content;
+        initialDisplayContent[msg.id] = msg.content; // Exibir conteúdo completo imediatamente
       });
       
       setMessages(data.messages);
       setDisplayedContent(initialDisplayContent);
-      
-      // Simular a digitação para as mensagens existentes da IA
-      data.messages.forEach((msg: Message) => {
-        if (msg.role === 'assistant') {
-          simulateTyping(msg.id, msg.content);
-        }
-      });
     } catch (error) {
       toast.error('Erro ao carregar mensagens');
     }
@@ -95,7 +90,12 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
     if (!input.trim() || isLoading) return;
 
     setIsLoading(true);
-    const userMessage = { id: Date.now().toString(), content: input, role: 'user' as const };
+    const userMessage = { 
+      id: Date.now().toString(), 
+      content: input, 
+      role: 'user' as const,
+      isNew: true
+    };
     setMessages((prev) => [...prev, userMessage]);
     setDisplayedContent(prev => ({
       ...prev,
@@ -113,7 +113,8 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
         id: tempMessageId,
         content: '',
         role: 'assistant',
-        isTyping: true
+        isTyping: true,
+        isNew: true
       }]);
       setDisplayedContent(prev => ({
         ...prev,
@@ -133,7 +134,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
       const assistantMessageId = Date.now().toString();
       setMessages((prev) => prev.map(msg => 
         msg.id === tempMessageId 
-          ? { id: assistantMessageId, content: data.message, role: 'assistant' }
+          ? { id: assistantMessageId, content: data.message, role: 'assistant', isNew: true }
           : msg
       ));
       setDisplayedContent(prev => ({
@@ -141,7 +142,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
         [assistantMessageId]: ''
       }));
 
-      // Iniciar o efeito de digitação
+      // Iniciar o efeito de digitação apenas para a nova mensagem
       simulateTyping(assistantMessageId, data.message);
 
       if (onUpdate) {
@@ -212,7 +213,8 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
             <div key={message.id} className="py-4">
               <div className="max-w-[768px] mx-auto px-4">
                 <div className="text-base text-gray-100 whitespace-pre-wrap">
-                  {displayedContent[message.id]}
+                  {/* Exibir conteúdo gradualmente apenas para novas mensagens da IA */}
+                  {message.isNew ? displayedContent[message.id] : message.content}
                   {message.isTyping && <span className="typing-cursor">▊</span>}
                 </div>
               </div>
