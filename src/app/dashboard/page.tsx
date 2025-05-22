@@ -158,12 +158,28 @@ export default function Dashboard() {
                 <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-[#202123] py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <Menu.Item>
                     {({ active }) => (
-                      <button
-                        onClick={() => signOut()}
-                        className={`block w-full px-4 py-2 text-left text-sm ${
+                      <Link
+                        href="/dashboard/perfil"
+                        className={`flex items-center w-full px-4 py-2 text-left text-sm ${
                           active ? 'bg-gray-800 text-white' : 'text-gray-300'
                         }`}
                       >
+                        <UserCircleIcon className="h-4 w-4 mr-2" />
+                        Meu Perfil
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => signOut()}
+                        className={`flex items-center w-full px-4 py-2 text-left text-sm ${
+                          active ? 'bg-gray-800 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                        </svg>
                         Sair
                       </button>
                     )}
