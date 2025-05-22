@@ -148,7 +148,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
               </div>
             </div>
           ) : (
-            <div key={message.id} className="bg-[#444654] py-4">
+            <div key={message.id} className="py-4 border-b border-gray-800/30">
               <div className="max-w-2xl mx-auto px-4">
                 <div className="flex gap-4 text-base">
                   <div className="w-7 h-7 rounded bg-teal-500 flex items-center justify-center flex-shrink-0">
