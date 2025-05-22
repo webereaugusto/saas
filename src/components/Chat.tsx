@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { PaperAirplaneIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -83,6 +83,16 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
         clearInterval(intervalId);
       }
     }, typingSpeed);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        toast.success('Copiado para a área de transferência!');
+      })
+      .catch(() => {
+        toast.error('Erro ao copiar texto');
+      });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,7 +214,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
           message.role === 'user' ? (
             <div key={message.id} className="px-4 py-3 max-w-[768px] mx-auto">
               <div className="flex justify-end">
-                <div className="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-[80%] whitespace-pre-wrap">
+                <div className="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-[80%] whitespace-pre-wrap" style={{ fontSize: '1rem', lineHeight: '1.75' }}>
                   {message.content}
                 </div>
               </div>
@@ -212,11 +222,24 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
           ) : (
             <div key={message.id} className="py-4">
               <div className="max-w-[768px] mx-auto px-4">
-                <div className="text-base text-gray-100 whitespace-pre-wrap">
+                <div className="text-base text-gray-100 whitespace-pre-wrap" style={{ fontSize: '1rem', lineHeight: '1.75' }}>
                   {/* Exibir conteúdo gradualmente apenas para novas mensagens da IA */}
                   {message.isNew ? displayedContent[message.id] : message.content}
                   {message.isTyping && <span className="typing-cursor">▊</span>}
                 </div>
+                {!message.isTyping && 
+                  // Só mostrar o botão se o conteúdo exibido for igual ao conteúdo completo
+                  (!message.isNew || (displayedContent[message.id] && displayedContent[message.id] === message.content)) && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <button 
+                      onClick={() => copyToClipboard(message.content)}
+                      className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+                      title="Copiar para área de transferência"
+                    >
+                      <ClipboardDocumentIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )
