@@ -222,7 +222,9 @@ export default function Dashboard() {
                       <span className="truncate">{chat.title}</span>
                     </button>
                     <Menu as="div" className="relative flex-shrink-0">
-                      <Menu.Button className="p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 focus:outline-none">
+                      <Menu.Button className={`p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 focus:outline-none transition-opacity duration-200 ${
+                        selectedChat === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                      }`}>
                         <EllipsisVerticalIcon className="h-5 w-5" />
                       </Menu.Button>
                       <Transition
