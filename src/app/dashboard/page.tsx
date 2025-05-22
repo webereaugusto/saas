@@ -210,19 +210,19 @@ export default function Dashboard() {
                     />
                   </div>
                 ) : (
-                  <>
+                  <div 
+                    className={`flex-1 flex items-center justify-between px-3 py-3 rounded-md hover:bg-gray-700 transition-colors ${
+                      selectedChat === chat.id ? 'bg-gray-800 text-white' : 'text-gray-300'
+                    }`}
+                  >
                     <button
                       onClick={() => setSelectedChat(chat.id)}
-                      className={`flex-1 flex items-center px-3 py-3 text-sm rounded-md hover:bg-gray-700 transition-colors text-left ${
-                        selectedChat === chat.id
-                          ? 'bg-gray-800 text-white'
-                          : 'text-gray-300'
-                      }`}
+                      className="flex-1 text-left truncate pr-2"
                     >
                       <span className="truncate">{chat.title}</span>
                     </button>
-                    <Menu as="div" className="relative">
-                      <Menu.Button className="p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-700 text-gray-300 focus:outline-none">
+                    <Menu as="div" className="relative flex-shrink-0">
+                      <Menu.Button className="p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 focus:outline-none">
                         <EllipsisVerticalIcon className="h-5 w-5" />
                       </Menu.Button>
                       <Transition
@@ -264,7 +264,7 @@ export default function Dashboard() {
                         </Menu.Items>
                       </Transition>
                     </Menu>
-                  </>
+                  </div>
                 )}
               </div>
             ))}
