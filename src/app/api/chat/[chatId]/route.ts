@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const chatId = params.chatId;
+    const { chatId } = params;
 
     const messages = await prisma.message.findMany({
       where: {

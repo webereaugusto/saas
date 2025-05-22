@@ -111,9 +111,9 @@ export default function UserProfile() {
     <div className="flex h-screen bg-[#343541]">
       <div className="w-full max-w-5xl mx-auto px-4 py-8">
         <div className="flex items-center mb-8">
-          <Link href="/dashboard" className="text-gray-300 hover:text-white mr-4">
+          <a href="/dashboard" className="text-gray-300 hover:text-white mr-4">
             <ArrowLeftIcon className="h-5 w-5" />
-          </Link>
+          </a>
           <h1 className="text-2xl font-bold text-white">Meu Perfil</h1>
         </div>
 
