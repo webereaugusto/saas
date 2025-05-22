@@ -155,6 +155,7 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
       // Iniciar o efeito de digitação apenas para a nova mensagem
       simulateTyping(assistantMessageId, data.message);
 
+      // Sempre atualizar após o envio de mensagem para que o chat seja exibido na barra lateral
       if (onUpdate) {
         onUpdate();
       }

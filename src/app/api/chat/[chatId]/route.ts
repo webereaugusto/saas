@@ -9,21 +9,25 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    if (!params || typeof params !== 'object' || !('chatId' in params)) {
+    // Primeiro, obtemos e verificamos o parâmetro chatId
+    const chatId = params.chatId;
+    
+    if (!chatId) {
       return NextResponse.json(
         { error: 'ID do chat não fornecido' },
         { status: 400 }
       );
     }
+    
+    // Agora fazemos a verificação de autenticação
+    const session = await getServerSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
 
     const messages = await prisma.message.findMany({
       where: {
-        chatId: String(params.chatId),
+        chatId: String(chatId),
       },
       orderBy: {
         createdAt: 'asc',

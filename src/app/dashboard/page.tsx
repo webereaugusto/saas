@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [isRenaming, setIsRenaming] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
+  const [tempChatId, setTempChatId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -30,9 +31,16 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/chats');
       const data = await response.json();
-      setChats(data.chats);
-      if (data.chats.length > 0 && !selectedChat) {
-        setSelectedChat(data.chats[0].id);
+      
+      // Filtra chats que tenham pelo menos uma mensagem
+      const chatsWithMessages = data.chats.filter((chat: any) => 
+        chat.messageCount > 0 || chat.id === tempChatId
+      );
+      
+      setChats(chatsWithMessages);
+      
+      if (chatsWithMessages.length > 0 && !selectedChat) {
+        setSelectedChat(chatsWithMessages[0].id);
       }
     } catch (error) {
       toast.error('Erro ao carregar chats');
@@ -41,14 +49,18 @@ export default function Dashboard() {
 
   const createNewChat = async () => {
     try {
+      // Criar novo chat na API
       const response = await fetch('/api/chats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: 'Novo Chat' }),
       });
       const data = await response.json();
-      setChats((prev) => [...prev, data.chat]);
+      
+      // Definir o novo chat como selecionado mas não adicionar à lista até ter mensagens
       setSelectedChat(data.chat.id);
+      setTempChatId(data.chat.id);
+      
     } catch (error) {
       toast.error('Erro ao criar novo chat');
     }
@@ -107,6 +119,7 @@ export default function Dashboard() {
       if (selectedChat === chatId) {
         const remainingChats = chats.filter(chat => chat.id !== chatId);
         setSelectedChat(remainingChats.length > 0 ? remainingChats[0].id : null);
+        setTempChatId(null); // Limpa o tempChatId se o chat excluído for o temporário
       }
 
       toast.success('Chat excluído com sucesso');

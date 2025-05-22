@@ -27,9 +27,23 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        _count: {
+          select: { messages: true }
+        }
+      }
     });
 
-    return NextResponse.json({ chats });
+    // Mapear os chats para incluir a contagem de mensagens
+    const formattedChats = chats.map(chat => ({
+      id: chat.id,
+      title: chat.title,
+      createdAt: chat.createdAt,
+      updatedAt: chat.updatedAt,
+      messageCount: chat._count.messages
+    }));
+
+    return NextResponse.json({ chats: formattedChats });
   } catch (error) {
     console.error('Erro ao buscar chats:', error);
     return NextResponse.json(
@@ -64,7 +78,12 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ chat });
+    return NextResponse.json({ 
+      chat: {
+        ...chat,
+        messageCount: 0
+      } 
+    });
   } catch (error) {
     console.error('Erro ao criar chat:', error);
     return NextResponse.json(
