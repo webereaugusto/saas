@@ -134,59 +134,61 @@ export default function Dashboard() {
             <span className="text-xl font-bold text-white">AI Chat SAAS</span>
           </Link>
           {session && (
-            <Menu as="div" className="relative">
-              <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-white">
-                {session.user?.image ? (
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={session.user.image}
-                    alt={session.user.name || ''}
-                  />
-                ) : (
-                  <UserCircleIcon className="h-8 w-8 text-gray-400" />
-                )}
-              </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-[#202123] py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/perfil"
-                        className={`flex items-center w-full px-4 py-2 text-left text-sm ${
-                          active ? 'bg-gray-800 text-white' : 'text-gray-300'
-                        }`}
-                      >
-                        <UserCircleIcon className="h-4 w-4 mr-2" />
-                        Meu Perfil
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={() => signOut()}
-                        className={`flex items-center w-full px-4 py-2 text-left text-sm ${
-                          active ? 'bg-gray-800 text-white' : 'text-gray-300'
-                        }`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                        </svg>
-                        Sair
-                      </button>
-                    )}
-                  </Menu.Item>
-                </Menu.Items>
-              </Transition>
-            </Menu>
+            <div className="flex items-center">
+              <Menu as="div" className="relative">
+                <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-white">
+                  {session.user?.image ? (
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src={session.user.image}
+                      alt={session.user.name || ''}
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                  )}
+                </Menu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-[#202123] py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <a
+                          href="/dashboard/perfil"
+                          className={`flex items-center w-full px-4 py-2 text-left text-sm ${
+                            active ? 'bg-gray-800 text-white' : 'text-gray-300'
+                          }`}
+                        >
+                          <UserCircleIcon className="h-4 w-4 mr-2" />
+                          Meu Perfil
+                        </a>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => signOut()}
+                          className={`flex items-center w-full px-4 py-2 text-left text-sm ${
+                            active ? 'bg-gray-800 text-white' : 'text-gray-300'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                          </svg>
+                          Sair
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+            </div>
           )}
         </div>
 
