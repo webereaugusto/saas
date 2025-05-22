@@ -6,6 +6,7 @@ interface Message {
   id: string;
   content: string;
   role: 'user' | 'assistant';
+  isTyping?: boolean; // Para controlar o efeito de digitação
 }
 
 interface ChatProps {
@@ -17,8 +18,10 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [displayedContent, setDisplayedContent] = useState<{[key: string]: string}>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingSpeed = 10; // milissegundos por caractere
 
   useEffect(() => {
     loadMessages();
@@ -26,13 +29,28 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, displayedContent]);
 
   const loadMessages = async () => {
     try {
       const response = await fetch(`/api/chat/${chatId}`);
       const data = await response.json();
+      
+      // Inicializar o conteúdo exibido para cada mensagem
+      const initialDisplayContent: {[key: string]: string} = {};
+      data.messages.forEach((msg: Message) => {
+        initialDisplayContent[msg.id] = msg.role === 'assistant' ? '' : msg.content;
+      });
+      
       setMessages(data.messages);
+      setDisplayedContent(initialDisplayContent);
+      
+      // Simular a digitação para as mensagens existentes da IA
+      data.messages.forEach((msg: Message) => {
+        if (msg.role === 'assistant') {
+          simulateTyping(msg.id, msg.content);
+        }
+      });
     } catch (error) {
       toast.error('Erro ao carregar mensagens');
     }
@@ -57,6 +75,21 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
     }
   };
 
+  const simulateTyping = (messageId: string, content: string) => {
+    let currentIndex = 0;
+    const intervalId = setInterval(() => {
+      if (currentIndex <= content.length) {
+        setDisplayedContent(prev => ({
+          ...prev,
+          [messageId]: content.substring(0, currentIndex)
+        }));
+        currentIndex++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, typingSpeed);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -64,12 +97,29 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
     setIsLoading(true);
     const userMessage = { id: Date.now().toString(), content: input, role: 'user' as const };
     setMessages((prev) => [...prev, userMessage]);
+    setDisplayedContent(prev => ({
+      ...prev,
+      [userMessage.id]: userMessage.content
+    }));
     setInput('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
 
     try {
+      // Adicionar uma mensagem temporária da IA com isTyping=true
+      const tempMessageId = `temp-${Date.now()}`;
+      setMessages((prev) => [...prev, {
+        id: tempMessageId,
+        content: '',
+        role: 'assistant',
+        isTyping: true
+      }]);
+      setDisplayedContent(prev => ({
+        ...prev,
+        [tempMessageId]: ''
+      }));
+
       const response = await fetch('/api/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,17 +129,28 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
 
-      setMessages((prev) => [...prev, {
-        id: Date.now().toString(),
-        content: data.message,
-        role: 'assistant'
-      }]);
+      // Substituir a mensagem temporária pela mensagem real
+      const assistantMessageId = Date.now().toString();
+      setMessages((prev) => prev.map(msg => 
+        msg.id === tempMessageId 
+          ? { id: assistantMessageId, content: data.message, role: 'assistant' }
+          : msg
+      ));
+      setDisplayedContent(prev => ({
+        ...prev,
+        [assistantMessageId]: ''
+      }));
+
+      // Iniciar o efeito de digitação
+      simulateTyping(assistantMessageId, data.message);
 
       if (onUpdate) {
         onUpdate();
       }
     } catch (error) {
       toast.error('Erro ao enviar mensagem');
+      // Remover a mensagem temporária em caso de erro
+      setMessages((prev) => prev.filter(msg => !msg.isTyping));
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +212,8 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
             <div key={message.id} className="py-4">
               <div className="max-w-[768px] mx-auto px-4">
                 <div className="text-base text-gray-100 whitespace-pre-wrap">
-                  {message.content}
+                  {displayedContent[message.id]}
+                  {message.isTyping && <span className="typing-cursor">▊</span>}
                 </div>
               </div>
             </div>
@@ -192,6 +254,19 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        
+        .typing-cursor {
+          display: inline-block;
+          width: 0.5em;
+          animation: blink 1s infinite;
+        }
+      `}</style>
     </div>
   );
 } 
