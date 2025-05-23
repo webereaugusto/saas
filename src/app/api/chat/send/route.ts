@@ -33,6 +33,28 @@ async function getOpenAIKey(): Promise<string | null> {
   }
 }
 
+// Função para obter o prompt do sistema das configurações
+async function getSystemPrompt(): Promise<string> {
+  try {
+    const setting = await prisma.$queryRaw<Array<{value: string}>>`
+      SELECT value FROM "Setting" WHERE name = 'system_prompt' AND value IS NOT NULL AND value != ''
+    `;
+    
+    if (setting && setting.length > 0 && setting[0].value) {
+      console.log('Usando prompt do sistema personalizado');
+      return setting[0].value;
+    }
+    
+    // Prompt padrão se não encontrar configuração
+    const defaultPrompt = 'Você é um assistente de IA útil, respeitoso e honesto. Sempre responda da forma mais útil possível, mantendo suas respostas precisas e factuais.';
+    console.log('Usando prompt do sistema padrão');
+    return defaultPrompt;
+  } catch (error) {
+    console.error('Erro ao buscar prompt do sistema:', error);
+    return 'Você é um assistente de IA útil, respeitoso e honesto. Sempre responda da forma mais útil possível, mantendo suas respostas precisas e factuais.';
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession();
@@ -104,11 +126,20 @@ export async function POST(request: Request) {
       orderBy: { createdAt: 'asc' },
     });
 
-    // Preparar mensagens para a API da OpenAI
-    const chatMessages = messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-    }));
+    // Obter o prompt do sistema
+    const systemPrompt = await getSystemPrompt();
+
+    // Preparar mensagens para a API da OpenAI com prompt do sistema
+    const chatMessages = [
+      {
+        role: 'system' as const,
+        content: systemPrompt,
+      },
+      ...messages.map((msg: { role: string; content: string }) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      }))
+    ];
 
     // Chamar a API da OpenAI
     const completion = await openai.chat.completions.create({
