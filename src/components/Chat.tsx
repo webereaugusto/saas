@@ -37,16 +37,21 @@ export default function Chat({ chatId, onUpdate }: ChatProps) {
       const response = await fetch(`/api/chat/${chatId}`);
       const data = await response.json();
       
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao carregar mensagens');
+      }
+      
       // Inicializar o conteúdo exibido para cada mensagem
       // Mensagens históricas são exibidas imediatamente
       const initialDisplayContent: {[key: string]: string} = {};
-      data.messages.forEach((msg: Message) => {
+      data.chat.messages.forEach((msg: Message) => {
         initialDisplayContent[msg.id] = msg.content; // Exibir conteúdo completo imediatamente
       });
       
-      setMessages(data.messages);
+      setMessages(data.chat.messages);
       setDisplayedContent(initialDisplayContent);
     } catch (error) {
+      console.error('Erro ao carregar mensagens:', error);
       toast.error('Erro ao carregar mensagens');
     }
   };

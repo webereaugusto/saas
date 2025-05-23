@@ -85,6 +85,12 @@ model Subscription {
   updatedAt       DateTime  @updatedAt
 }
 
+model Setting {
+  id     String @id @default(cuid())
+  name   String @unique
+  value  String @db.Text
+}
+
 enum Role {
   USER
   ADMIN
