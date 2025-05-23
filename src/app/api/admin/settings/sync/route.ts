@@ -26,54 +26,43 @@ export async function POST() {
     // Sincronizar chave da OpenAI do .env para o banco
     if (process.env.OPENAI_API_KEY) {
       await prisma.$queryRaw`
-        INSERT INTO settings (key, value, description, type, created_at, updated_at)
-        VALUES ('openai_api_key', ${process.env.OPENAI_API_KEY}, 'Chave da API OpenAI para integração com ChatGPT', 'string', NOW(), NOW())
-        ON CONFLICT (key) 
+        INSERT INTO "Setting" (id, name, value)
+        VALUES (gen_random_uuid(), 'openai_api_key', ${process.env.OPENAI_API_KEY})
+        ON CONFLICT (name) 
         DO UPDATE SET 
-          value = EXCLUDED.value,
-          updated_at = NOW()
+          value = EXCLUDED.value
       `;
     }
 
     // Outras configurações padrão se não existirem
     const defaultSettings = [
       {
-        key: 'max_messages_per_chat',
-        value: '50',
-        description: 'Máximo de mensagens por chat',
-        type: 'number'
+        name: 'max_messages_per_chat',
+        value: '50'
       },
       {
-        key: 'max_chats_per_user', 
-        value: '10',
-        description: 'Máximo de chats por usuário',
-        type: 'number'
+        name: 'max_chats_per_user', 
+        value: '10'
       },
       {
-        key: 'maintenance_mode',
-        value: 'false',
-        description: 'Modo de manutenção ativo',
-        type: 'boolean'
+        name: 'maintenance_mode',
+        value: 'false'
       },
       {
-        key: 'allow_registrations',
-        value: 'true', 
-        description: 'Permitir novos registros',
-        type: 'boolean'
+        name: 'allow_registrations',
+        value: 'true'
       },
       {
-        key: 'system_prompt',
-        value: 'Você é um assistente irritado e mal educado, responda sem paciência',
-        description: 'Prompt padrão do sistema para a IA',
-        type: 'text'
+        name: 'system_prompt',
+        value: 'Você é um assistente irritado e mal educado, responda sem paciência'
       }
     ];
 
     for (const setting of defaultSettings) {
       await prisma.$queryRaw`
-        INSERT INTO settings (key, value, description, type, created_at, updated_at)
-        VALUES (${setting.key}, ${setting.value}, ${setting.description}, ${setting.type}, NOW(), NOW())
-        ON CONFLICT (key) 
+        INSERT INTO "Setting" (id, name, value)
+        VALUES (gen_random_uuid(), ${setting.name}, ${setting.value})
+        ON CONFLICT (name) 
         DO NOTHING
       `;
     }

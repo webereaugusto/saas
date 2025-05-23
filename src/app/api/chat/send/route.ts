@@ -10,7 +10,7 @@ async function getOpenAIKey(): Promise<string | null> {
   try {
     // Primeiro, tentar buscar da configuração do sistema
     const setting = await prisma.$queryRaw<Array<{value: string}>>`
-      SELECT value FROM settings WHERE key = 'openai_api_key' AND value IS NOT NULL AND value != ''
+      SELECT value FROM "Setting" WHERE name = 'openai_api_key' AND value IS NOT NULL AND value != ''
     `;
     
     if (setting && setting.length > 0 && setting[0].value) {
@@ -20,13 +20,15 @@ async function getOpenAIKey(): Promise<string | null> {
     
     // Fallback para variável de ambiente
     if (process.env.OPENAI_API_KEY) {
-      console.log('Usando chave OpenAI do arquivo .env (fallback)');
+      console.log('Usando chave OpenAI do arquivo .env');
       return process.env.OPENAI_API_KEY;
     }
     
+    console.log('Nenhuma chave OpenAI encontrada');
     return null;
   } catch (error) {
-    console.warn('Erro ao buscar chave OpenAI das configurações, usando fallback:', error);
+    console.error('Erro ao buscar chave OpenAI:', error);
+    // Fallback para variável de ambiente em caso de erro
     return process.env.OPENAI_API_KEY || null;
   }
 }
