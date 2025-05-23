@@ -48,7 +48,17 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ settings: settingsObject });
+    // Formatado para a interface com valores padrão e chave mascarada
+    const formattedSettings: Settings = {
+      openaiApiKey: settingsObject['openai_api_key'] ? '••••••••••••••••••••••••••••••••••••••••••••••••••••' : '',
+      maxMessagesPerChat: parseInt(settingsObject['max_messages_per_chat'] || '50'),
+      maxChatsPerUser: parseInt(settingsObject['max_chats_per_user'] || '10'),
+      maintenanceMode: settingsObject['maintenance_mode'] === 'true',
+      allowUserRegistration: settingsObject['allow_registrations'] === 'true',
+      systemPrompt: settingsObject['system_prompt'] || 'Você é um assistente de IA útil, respeitoso e honesto. Sempre responda da forma mais útil possível, mantendo suas respostas precisas e factuais.'
+    };
+
+    return NextResponse.json({ settings: formattedSettings });
   } catch (error) {
     console.error('Erro ao buscar configurações:', error);
     return NextResponse.json(
@@ -89,23 +99,52 @@ export async function POST(request: NextRequest) {
 
     // Atualizar ou criar cada configuração usando SQL bruto
     for (const [name, value] of Object.entries(settings)) {
-      const stringValue = String(value);
+      // Converter os nomes das configurações da interface para o banco
+      let dbName = '';
+      let dbValue = String(value);
+      
+      switch(name) {
+        case 'openaiApiKey':
+          dbName = 'openai_api_key';
+          // Se o valor estiver mascarado, não atualizar
+          if (dbValue.includes('••••')) {
+            continue;
+          }
+          break;
+        case 'maxMessagesPerChat':
+          dbName = 'max_messages_per_chat';
+          break;
+        case 'maxChatsPerUser':
+          dbName = 'max_chats_per_user';
+          break;
+        case 'maintenanceMode':
+          dbName = 'maintenance_mode';
+          break;
+        case 'allowUserRegistration':
+          dbName = 'allow_registrations';
+          break;
+        case 'systemPrompt':
+          dbName = 'system_prompt';
+          break;
+        default:
+          continue;
+      }
       
       // Verificar se a configuração já existe
       const existingSetting = await prisma.$queryRaw`
-        SELECT * FROM "Setting" WHERE name = ${name}
+        SELECT * FROM "Setting" WHERE name = ${dbName}
       `;
       
       if (Array.isArray(existingSetting) && existingSetting.length > 0) {
         // Atualizar configuração existente
         await prisma.$executeRaw`
-          UPDATE "Setting" SET value = ${stringValue} WHERE name = ${name}
+          UPDATE "Setting" SET value = ${dbValue} WHERE name = ${dbName}
         `;
       } else {
         // Criar nova configuração
         await prisma.$executeRaw`
           INSERT INTO "Setting" (id, name, value) 
-          VALUES (gen_random_uuid(), ${name}, ${stringValue})
+          VALUES (gen_random_uuid(), ${dbName}, ${dbValue})
         `;
       }
     }

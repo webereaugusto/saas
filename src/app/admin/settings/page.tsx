@@ -100,9 +100,9 @@ export default function SettingsPage() {
       }
 
       const data = await response.json();
-      toast.success(data.message);
+      toast.success(data.message || 'Configurações sincronizadas com sucesso!');
       
-      // Recarregar as configurações após sincronizar
+      // Atualizar os dados da interface após a sincronização
       await fetchSettings();
     } catch (error) {
       console.error('Erro ao sincronizar configurações:', error);
@@ -144,17 +144,29 @@ export default function SettingsPage() {
             
             <div className="space-y-5">
               <div>
-                <label className="block text-gray-300 text-sm font-medium mb-2" htmlFor="openaiApiKey">
+                <label htmlFor="openaiApiKey" className="block text-sm font-medium text-gray-300 mb-2">
                   Chave da API OpenAI
                 </label>
-                <input
-                  type="password"
-                  id="openaiApiKey"
-                  value={settings.openaiApiKey}
-                  onChange={(e) => handleChange('openaiApiKey', e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <p className="mt-1 text-sm text-gray-400">Esta chave é usada para fazer chamadas à API da OpenAI.</p>
+                <div className="relative">
+                  <input
+                    type="password"
+                    id="openaiApiKey"
+                    value={settings.openaiApiKey}
+                    onChange={(e) => handleChange('openaiApiKey', e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="sk-..."
+                  />
+                  {settings.openaiApiKey && settings.openaiApiKey.includes('••••') && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                        ✓ Configurada
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-400 mt-1">
+                  Esta chave é usada para fazer chamadas à API da OpenAI.
+                </p>
               </div>
 
               <div>
