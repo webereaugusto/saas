@@ -5,9 +5,31 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Função para obter a chave da API da OpenAI das configurações
+async function getOpenAIKey(): Promise<string | null> {
+  try {
+    // Primeiro, tentar buscar da configuração do sistema
+    const setting = await prisma.$queryRaw<Array<{value: string}>>`
+      SELECT value FROM settings WHERE key = 'openai_api_key' AND value IS NOT NULL AND value != ''
+    `;
+    
+    if (setting && setting.length > 0 && setting[0].value) {
+      console.log('Usando chave OpenAI do sistema de configurações');
+      return setting[0].value;
+    }
+    
+    // Fallback para variável de ambiente
+    if (process.env.OPENAI_API_KEY) {
+      console.log('Usando chave OpenAI do arquivo .env (fallback)');
+      return process.env.OPENAI_API_KEY;
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Erro ao buscar chave OpenAI das configurações, usando fallback:', error);
+    return process.env.OPENAI_API_KEY || null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +43,19 @@ export async function POST(request: Request) {
     if (!message) {
       return NextResponse.json({ error: 'Mensagem é obrigatória' }, { status: 400 });
     }
+
+    // Obter a chave da API
+    const apiKey = await getOpenAIKey();
+    if (!apiKey) {
+      return NextResponse.json({ 
+        error: 'Chave da API OpenAI não configurada. Configure nas configurações do sistema.' 
+      }, { status: 500 });
+    }
+
+    // Inicializar OpenAI com a chave obtida
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    });
 
     // Salvar mensagem do usuário
     await prisma.message.create({
